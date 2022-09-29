@@ -3,7 +3,8 @@
 #![feature(exhaustive_patterns)]
 #![feature(stmt_expr_attributes)]
 
-use panic_halt as _; // breakpoint on `rust_begin_unwind` to catch panics
+//use panic_halt as _; // breakpoint on `rust_begin_unwind` to catch panics
+use panic_semihosting as _;
 
 use cortex_m::asm;
 use cortex_m_rt::entry;
@@ -15,10 +16,6 @@ use led_wheel::LEDWheel;
 
 mod compass;
 use compass::Compass;
-
-fn sleep(seconds: f32) {
-    asm::delay((seconds * 8_000_000f32) as u32)
-}
 
 #[entry]
 fn main() -> ! {
@@ -38,13 +35,17 @@ fn main() -> ! {
     let mut compass = Compass::new(
         peripherals.I2C1,
         gpiob,
-        clocks.clone(),
+        clocks,
+        // Section 3.2.2 in reference manual documents i2c being available over apb1.
         &mut reset_and_clock_control.apb1,
     )
     .unwrap();
 
     loop {
         let mag = compass.get_compass_reading().unwrap();
+        if mag.x != 0 || mag.y != 0 || mag.z != 0 {
+            asm::nop()
+        }
         // z is down, x and y are towards and perpendicular to north pole bearing? not sure
         let Ok(_) = led_wheel
             .n

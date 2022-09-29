@@ -1,6 +1,6 @@
 use core::convert::TryInto;
 use embedded_hal::blocking::i2c::{Write, WriteRead};
-use lsm303dlhc::{I16x3, Lsm303dlhc};
+use lsm303dlhc::{I16x3, Lsm303dlhc, MagOdr};
 use stm32f3xx_hal::{
     gpio, i2c,
     i2c::{I2c, SclPin, SdaPin},
@@ -45,12 +45,13 @@ where {
         let i2c_initialised = i2c::I2c::new(
             i2c_channel,
             (scl, sda),
-            100_u32.kHz().try_into().unwrap(),
+            400_u32.kHz().try_into().unwrap(),
             clocks,
-            // Section 3.2.2 in reference manual documents i2c being available over apb1.
             i2c_bus,
         );
-        Lsm303dlhc::new(i2c_initialised).map(|compass_device| Compass {
+        let mut compass_device = Lsm303dlhc::new(i2c_initialised)?;
+        compass_device.mag_odr(MagOdr::Hz220)?;
+        Ok(Compass {
             compass: compass_device,
         })
     }

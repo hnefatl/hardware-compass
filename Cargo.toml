@@ -10,6 +10,7 @@ cortex-m = "0.7.2"
 cortex-m-rt = { version = "0.7.1", features = ["device"] }
 cortex-m-semihosting = "0.3.3"
 panic-halt = "0.2.0"
+panic-semihosting = "0.6.0"
 stm32f3xx-hal = { version = "0.9.1", features = ["ld", "rt", "stm32f303xc"] }
 embedded-hal = "0.2.7"
 lsm303dlhc = "0.2.0"
